@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useProfile } from "@/context/ProfileContext";
 import {
   evaluateEligibility,
   OverallEligibilityResponse,
@@ -16,59 +17,173 @@ import {
   FileText,
   Sparkles,
   User,
+  UserPlus,
+  ArrowRight,
+  ShieldAlert,
 } from "lucide-react";
 
-const DEFAULT_PROFILE: StudentProfileData = {
-  name: "Rahul Sharma",
-  state: "Maharashtra",
-  district: "Pune",
-  category: "OBC",
-  annual_family_income: 250000,
-  gender: "Male",
-  disability_status: false,
-  first_generation_learner: true,
-  education_level: "Undergraduate",
-  course: "B.Tech Computer Science",
-  year_of_study: 1,
-  cgpa_or_percentage: 82.5,
-  hostel_status: false,
-  domicile: "Maharashtra",
-  sports_quota: false,
-  ncc_quota: false,
-  defence_quota: false,
-  single_girl_child: false,
-};
+const SAMPLE_PRESETS: { label: string; data: StudentProfileData }[] = [
+  {
+    label: "Rahul Sharma (OBC B.Tech Student, Maharashtra)",
+    data: {
+      name: "Rahul Sharma",
+      state: "Maharashtra",
+      district: "Pune",
+      category: "OBC",
+      annual_family_income: 250000,
+      gender: "Male",
+      disability_status: false,
+      first_generation_learner: true,
+      education_level: "Undergraduate",
+      course: "B.Tech Computer Science",
+      year_of_study: 1,
+      cgpa_or_percentage: 82.5,
+      hostel_status: false,
+      domicile: "Maharashtra",
+      sports_quota: false,
+      ncc_quota: false,
+      defence_quota: false,
+      single_girl_child: false,
+    },
+  },
+  {
+    label: "Priya Patel (Girl Engineering Candidate - Pragati Eligible)",
+    data: {
+      name: "Priya Patel",
+      state: "Gujarat",
+      district: "Ahmedabad",
+      category: "General",
+      annual_family_income: 450000,
+      gender: "Female",
+      disability_status: false,
+      first_generation_learner: false,
+      education_level: "Undergraduate",
+      course: "B.E Electronics Engineering",
+      year_of_study: 1,
+      cgpa_or_percentage: 88.0,
+      hostel_status: false,
+      domicile: "Gujarat",
+      sports_quota: false,
+      ncc_quota: false,
+      defence_quota: false,
+      single_girl_child: true,
+    },
+  },
+  {
+    label: "Ankit Kumar (SC Category Student, UP)",
+    data: {
+      name: "Ankit Kumar",
+      state: "Uttar Pradesh",
+      district: "Lucknow",
+      category: "SC",
+      annual_family_income: 180000,
+      gender: "Male",
+      disability_status: false,
+      first_generation_learner: true,
+      education_level: "Undergraduate",
+      course: "B.Sc Agriculture",
+      year_of_study: 1,
+      cgpa_or_percentage: 76.0,
+      hostel_status: false,
+      domicile: "Uttar Pradesh",
+      sports_quota: false,
+      ncc_quota: false,
+      defence_quota: false,
+      single_girl_child: false,
+    },
+  },
+];
 
 export default function MatchesPage() {
+  const { profile, hasProfile, saveProfile, loading: profileLoading } = useProfile();
   const [response, setResponse] = useState<OverallEligibilityResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<"ALL" | "ELIGIBLE" | "PARTIAL">("ALL");
 
   useEffect(() => {
     async function loadMatches() {
-      setLoading(true);
-      let currentProfile = DEFAULT_PROFILE;
-      const saved = localStorage.getItem("scholarship_student_profile");
-      if (saved) {
-        try {
-          currentProfile = JSON.parse(saved);
-        } catch (e) {
-          console.error(e);
-        }
+      if (!hasProfile || !profile) {
+        setResponse(null);
+        setLoading(false);
+        return;
       }
-
-      const res = await evaluateEligibility(currentProfile);
+      setLoading(true);
+      const res = await evaluateEligibility(profile);
       setResponse(res);
       setLoading(false);
     }
 
-    loadMatches();
-  }, []);
+    if (!profileLoading) {
+      loadMatches();
+    }
+  }, [hasProfile, profile, profileLoading]);
 
-  if (loading) {
+  // ==========================================
+  // STATE 1: GUEST VISITOR (No Profile Created)
+  // ==========================================
+  if (!hasProfile) {
+    return (
+      <div className="space-y-8 max-w-4xl mx-auto py-6">
+        <div className="glass-panel rounded-3xl p-8 sm:p-12 text-center border border-indigo-500/30 space-y-6">
+          <div className="w-16 h-16 rounded-3xl bg-indigo-600/20 text-indigo-400 flex items-center justify-center mx-auto border border-indigo-500/40 shadow-xl">
+            <ShieldAlert className="w-8 h-8" />
+          </div>
+
+          <div className="space-y-2">
+            <h1 className="text-3xl font-extrabold font-outfit text-white">
+              No Student Profile Created Yet
+            </h1>
+            <p className="text-sm text-gray-300 max-w-lg mx-auto">
+              Scholarship Buddy requires your student parameters (Category, Annual Family Income, Domicile State, Academic Score) to run deterministic rule matching and compute your confidence score.
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
+            <Link
+              href="/profile"
+              className="flex items-center gap-2 px-8 py-3.5 rounded-xl font-bold text-white bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 shadow-xl shadow-indigo-600/30 transition-all hover:scale-[1.02]"
+            >
+              <UserPlus className="w-5 h-5" />
+              <span>Create Full Profile</span>
+            </Link>
+
+            <Link
+              href="/scholarships"
+              className="flex items-center gap-2 px-6 py-3.5 rounded-xl font-semibold text-gray-300 bg-gray-800 hover:bg-gray-700 border border-gray-700 transition-all"
+            >
+              <span>Browse All Scholarships</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          {/* Quick Preset Sample Profiles */}
+          <div className="pt-8 border-t border-gray-800 space-y-3">
+            <span className="text-xs font-semibold text-gray-400 flex items-center justify-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-indigo-400" />
+              Or try a 1-click sample profile for immediate testing:
+            </span>
+            <div className="flex flex-wrap justify-center gap-2.5">
+              {SAMPLE_PRESETS.map((preset, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => saveProfile(preset.data)}
+                  className="px-3.5 py-2 rounded-xl text-xs font-medium bg-gray-900 hover:bg-indigo-600/30 hover:border-indigo-500/50 border border-gray-800 text-gray-300 transition-all"
+                >
+                  {preset.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Loading indicator for personalized state
+  if (profileLoading || loading) {
     return (
       <div className="space-y-6">
-        <div className="h-20 rounded-2xl glass-card animate-pulse" />
+        <div className="h-24 rounded-2xl glass-card animate-pulse" />
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {[1, 2, 3, 4].map((i) => (
             <div key={i} className="h-64 rounded-2xl glass-card animate-pulse bg-gray-900/50" />
@@ -78,7 +193,10 @@ export default function MatchesPage() {
     );
   }
 
-  const student = response?.student_profile || DEFAULT_PROFILE;
+  // ==========================================
+  // STATE 2: PROFILE ACTIVE (Personalized Matches)
+  // ==========================================
+  const student = profile;
   const allMatches = response?.matches || [];
 
   const filteredMatches = allMatches.filter((m) => {
@@ -94,7 +212,7 @@ export default function MatchesPage() {
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-950/80 border border-indigo-700/50 text-xs font-semibold text-indigo-300 mb-2">
             <User className="w-3.5 h-3.5 text-indigo-400" />
-            <span>Profile: {student.name} ({student.category}, {student.state})</span>
+            <span>Active Profile: {student.name} ({student.category}, {student.state})</span>
           </div>
 
           <h1 className="text-3xl font-extrabold font-outfit text-white flex items-center gap-3">

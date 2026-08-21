@@ -2,15 +2,32 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { GraduationCap, User, Award, Search, FileText, Sparkles } from "lucide-react";
+import { useProfile } from "@/context/ProfileContext";
+import {
+  GraduationCap,
+  User,
+  Award,
+  Search,
+  FileText,
+  Sparkles,
+  LogOut,
+  UserPlus,
+  CheckCircle2,
+} from "lucide-react";
 
 export default function Navbar() {
   const pathname = usePathname();
+  const { profile, hasProfile, clearProfile } = useProfile();
 
   const navLinks = [
-    { name: "Dashboard", href: "/", icon: Sparkles },
+    { name: "Home", href: "/", icon: Sparkles },
     { name: "My Profile", href: "/profile", icon: User },
-    { name: "Eligible Matches", href: "/matches", icon: Award },
+    {
+      name: "Matched Schemes",
+      href: "/matches",
+      icon: Award,
+      badge: hasProfile ? "Active" : undefined,
+    },
     { name: "All Scholarships", href: "/scholarships", icon: Search },
     { name: "Document Guide", href: "/documents", icon: FileText },
   ];
@@ -50,21 +67,48 @@ export default function Navbar() {
                   }`}
                 >
                   <Icon className={`w-4 h-4 ${isActive ? "text-indigo-400" : ""}`} />
-                  {link.name}
+                  <span>{link.name}</span>
+                  {link.badge && (
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                  )}
                 </Link>
               );
             })}
           </nav>
 
-          {/* Quick CTA */}
+          {/* Profile Status & Action Button */}
           <div className="flex items-center gap-3">
-            <Link
-              href="/profile"
-              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white shadow-md shadow-indigo-600/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
-            >
-              <User className="w-4 h-4" />
-              <span>Check Eligibility</span>
-            </Link>
+            {hasProfile && profile ? (
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/profile"
+                  className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gray-900 border border-indigo-500/30 hover:border-indigo-400 text-xs font-semibold text-gray-200 transition-colors"
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>{profile.name}</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-800">
+                    {profile.category}
+                  </span>
+                </Link>
+
+                <button
+                  onClick={clearProfile}
+                  title="Reset profile and return to default guest portal"
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-medium text-gray-400 hover:text-red-400 hover:bg-red-950/30 border border-transparent hover:border-red-800/40 transition-all"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  <span className="hidden lg:inline">Reset Profile</span>
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/profile"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white shadow-md shadow-indigo-600/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <UserPlus className="w-4 h-4" />
+                <span>Create Profile</span>
+              </Link>
+            )}
           </div>
         </div>
       </div>

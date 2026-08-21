@@ -1,22 +1,23 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useProfile } from "@/context/ProfileContext";
 import { fetchDocumentGuidance, DocumentGuidanceItem, StudentProfileData } from "@/lib/api";
-import { FileText, Building, Clock, CheckSquare, Sparkles, MapPin } from "lucide-react";
+import { FileText, Building, Clock, CheckSquare, Sparkles, MapPin, User } from "lucide-react";
 
 const DEFAULT_PROFILE: StudentProfileData = {
-  name: "Rahul Sharma",
+  name: "Guest Visitor",
   state: "Maharashtra",
   district: "Pune",
-  category: "OBC",
+  category: "General",
   annual_family_income: 250000,
   gender: "Male",
   disability_status: false,
   first_generation_learner: true,
   education_level: "Undergraduate",
-  course: "B.Tech Computer Science",
+  course: "Higher Education",
   year_of_study: 1,
-  cgpa_or_percentage: 82.5,
+  cgpa_or_percentage: 75.0,
   hostel_status: false,
   domicile: "Maharashtra",
   sports_quota: false,
@@ -26,40 +27,43 @@ const DEFAULT_PROFILE: StudentProfileData = {
 };
 
 export default function DocumentGuidePage() {
+  const { profile, hasProfile, loading: profileLoading } = useProfile();
   const [guidance, setGuidance] = useState<DocumentGuidanceItem[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
       setLoading(true);
-      let currentProfile = DEFAULT_PROFILE;
-      const saved = localStorage.getItem("scholarship_student_profile");
-      if (saved) {
-        try {
-          currentProfile = JSON.parse(saved);
-        } catch (e) {
-          console.error(e);
-        }
-      }
-      const data = await fetchDocumentGuidance(currentProfile);
+      const targetProfile = hasProfile && profile ? profile : DEFAULT_PROFILE;
+      const data = await fetchDocumentGuidance(targetProfile);
       setGuidance(data);
       setLoading(false);
     }
 
-    load();
-  }, []);
+    if (!profileLoading) {
+      load();
+    }
+  }, [hasProfile, profile, profileLoading]);
 
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-extrabold font-outfit text-white flex items-center gap-3">
-          <FileText className="w-8 h-8 text-indigo-400" />
-          <span>Document Procurement Guide</span>
-        </h1>
-        <p className="text-sm text-gray-400 mt-1">
-          Personalized checklist and official portal instructions on where to apply for essential Indian scholarship certificates.
-        </p>
+      <div className="glass-card rounded-2xl p-6 border-l-4 border-l-indigo-500 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-950/80 border border-indigo-700/50 text-xs font-semibold text-indigo-300 mb-2">
+            <User className="w-3.5 h-3.5 text-indigo-400" />
+            <span>{hasProfile && profile ? `Personalized for ${profile.name}` : "Standard Indian Document Guide"}</span>
+          </div>
+
+          <h1 className="text-3xl font-extrabold font-outfit text-white flex items-center gap-3">
+            <FileText className="w-8 h-8 text-indigo-400" />
+            <span>Document Procurement Guide</span>
+          </h1>
+
+          <p className="text-sm text-gray-400 mt-1">
+            Official instructions on where to apply for essential Indian scholarship certificates (e-District, Tehsildar, CSC, Bank NPCI).
+          </p>
+        </div>
       </div>
 
       {loading ? (
