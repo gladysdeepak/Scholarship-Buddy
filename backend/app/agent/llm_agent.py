@@ -34,7 +34,7 @@ class ScholarshipCopilotAgent:
             try:
                 import google.generativeai as genai
                 genai.configure(api_key=self.gemini_key)
-                model = genai.GenerativeModel("gemini-1.5-flash")
+                model = genai.GenerativeModel("gemini-3.8-flash")
                 prompt = f"""
                 You are Scholarship Buddy, an expert AI copilot for Indian students.
                 Provide a warm, encouraging 3-bullet-point summary for student {student.name}:

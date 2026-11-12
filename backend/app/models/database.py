@@ -1,5 +1,5 @@
 import json
-from sqlalchemy import create_engine, Column, String, Float, Boolean, Text, Integer
+from sqlalchemy import create_engine, Column, String, Float, Boolean, Text, Integer, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
@@ -59,6 +59,36 @@ class StudentProfileDB(Base):
     ncc_quota = Column(Boolean, default=False)
     defence_quota = Column(Boolean, default=False)
     single_girl_child = Column(Boolean, default=False)
+
+
+class SOPDraftDB(Base):
+    __tablename__ = "sop_drafts"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    student_id = Column(String, index=True)
+    scholarship_id = Column(String, index=True)
+    content = Column(Text, nullable=False)
+    created_at = Column(DateTime, nullable=False)
+
+
+class ScholarshipChangeDB(Base):
+    __tablename__ = "scholarship_changes"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    scholarship_id = Column(String, index=True)
+    field_name = Column(String, nullable=False)
+    old_value = Column(Text)
+    new_value = Column(Text)
+    source_url = Column(Text)
+    detected_at = Column(DateTime, nullable=False)
+
+
+class StudentAlertDB(Base):
+    __tablename__ = "student_alerts"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    student_id = Column(String, index=True)
+    scholarship_id = Column(String, index=True)
+    message = Column(Text, nullable=False)
+    created_at = Column(DateTime, nullable=False)
+    read_at = Column(DateTime, nullable=True)
 
 
 def init_db():

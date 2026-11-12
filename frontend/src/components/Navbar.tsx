@@ -13,6 +13,7 @@ import {
   LogOut,
   UserPlus,
   CheckCircle2,
+  MessageCircle,
 } from "lucide-react";
 
 export default function Navbar() {
@@ -30,6 +31,8 @@ export default function Navbar() {
     },
     { name: "All Scholarships", href: "/scholarships", icon: Search },
     { name: "Document Guide", href: "/documents", icon: FileText },
+    { name: "AI Chat", href: "/chat", icon: MessageCircle },
+    { name: "SOP Builder", href: "/sop", icon: FileText },
   ];
 
   return (

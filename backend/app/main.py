@@ -1,4 +1,5 @@
 import json
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
@@ -6,11 +7,13 @@ from dotenv import load_dotenv
 from app.models.database import engine, Base, SessionLocal, ScholarshipDB
 from app.data.scholarship_seed import SAMPLE_SCHOLARSHIPS
 from app.routers import scholarships
+from app.routers import chat as agentic
+from app.agents.monitor_agent import start_scheduler
 
 load_dotenv()
 
 app = FastAPI(
-    title="Scholarship Buddy API - Phase 1",
+    title="Scholarship Buddy API",
     description="Agentic AI Platform & Deterministic Eligibility Engine for Indian Scholarships",
     version="1.0.0",
 )
@@ -56,9 +59,25 @@ def startup_event():
             print(f"Successfully seeded {len(SAMPLE_SCHOLARSHIPS)} scholarships!")
     finally:
         db.close()
+    # Indexing is opt-in so missing API keys or optional vector packages never prevent API startup.
+    if os.getenv("AUTO_INGEST_RAG", "false").lower() == "true":
+        try:
+            from app.rag.pipeline import run_full_ingestion
+            run_full_ingestion(SAMPLE_SCHOLARSHIPS)
+        except Exception as exc:
+            print(f"RAG auto-ingestion skipped: {exc}")
+    app.state.monitor_scheduler = start_scheduler()
+
+
+@app.on_event("shutdown")
+def shutdown_event():
+    scheduler = getattr(app.state, "monitor_scheduler", None)
+    if scheduler:
+        scheduler.shutdown(wait=False)
 
 
 app.include_router(scholarships.router)
+app.include_router(agentic.router)
 
 
 @app.get("/")
@@ -66,6 +85,6 @@ def read_root():
     return {
         "status": "online",
         "app": "Scholarship Buddy API",
-        "phase": 1,
+        "phase": 2,
         "docs": "/docs",
     }

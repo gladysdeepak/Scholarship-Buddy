@@ -2,7 +2,7 @@
 
 > **Agentic AI platform & deterministic rule engine helping Indian students discover scholarships, verify eligibility with zero hallucinations, prepare applications, and receive proactive guidance.**
 
-![License](https://img.shields.io/badge/Phase-Phase%201%20Complete-indigo)
+![License](https://img.shields.io/badge/Phase-Phase%202%20RAG%20%26%20Agents-indigo)
 ![Next.js](https://img.shields.io/badge/Frontend-Next.js%2014-black)
 ![FastAPI](https://img.shields.io/badge/Backend-FastAPI-emerald)
 ![Python](https://img.shields.io/badge/Python-3.10%2B-blue)
@@ -201,6 +201,28 @@ SCHOLARSHIP_BUDDY/
 | `GET` | `/api/scholarships/{id}` | Retrieve full scholarship details by ID |
 | `POST` | `/api/eligibility/evaluate` | Evaluate student profile against all scholarships deterministically & return AI summary |
 | `POST` | `/api/documents/guidance` | Generate tailored document procurement instructions based on profile & matched schemes |
+| `GET` | `/api/search?q=...` | Semantic search over the indexed scholarship knowledge base |
+| `POST` | `/api/chat` | Server-sent event chat with RAG answers and profile-aware eligibility/document advice |
+| `POST` | `/api/sop/generate` | Generate and persist an SOP draft after five interview answers |
+| `GET` | `/api/alerts/{student_id}` | List deadline monitor alerts for a saved profile |
+
+## RAG and Agent Workflows
+
+The deterministic eligibility engine remains authoritative. The RAG layer indexes structured scholarship descriptions, eligibility rules, and document instructions. Install the optional packages in `backend/requirements.txt`, then build the local index:
+
+```bash
+cd backend
+python -m pip install -r requirements.txt
+python scripts/ingest_scholarships.py
+# Optional: add local PDF brochures or fetch the seed schemes' official pages
+python scripts/ingest_scholarships.py --force --pdf-dir ./documents --include-web
+```
+
+The index is persisted under `backend/chroma_db/` (and is ignored by Git). If ChromaDB and LangChain are not installed, ingestion and search use a lightweight persistent lexical index so local chat still works. Set `GEMINI_API_KEY` for generated grounded prose; without it, the service returns retrieved evidence and deterministic templates.
+
+Set `ENABLE_DEADLINE_MONITOR=true` to start the daily official-page change checker. It is disabled by default. The checker records page changes, updates a deadline only when an explicit deadline label and date are found together, and alerts saved profiles that pass the deterministic rules for that scheme. Configure `MONITOR_ALLOWED_HOSTS` to change its allowed domains. Page changes without a clearly labeled deadline are flagged for review; this checker does not discover new schemes.
+
+The `/chat` and `/sop` pages expose the query and writing workflows. SOP generation requires answers to all five interview prompts and saves a draft in the local database. Review generated text and verify scheme details on official portals before applying.
 
 ---
 
@@ -214,9 +236,8 @@ python3 -m pytest tests/
 
 ---
 
-##  Roadmap & Future Enhancements (Phase 2+)
+##  Future Enhancements
 
-- [ ] **Resume & SOP Agent**: AI-assisted writing for scholarship essays, cover letters, and statements of purpose.
 - [ ] **Application Progress Tracker**: Step-by-step progress tracking and deadline countdown alerts via WhatsApp / SMS / Email.
 - [ ] **Document OCR & Verification**: Auto-extract income and category details from uploaded certificates.
 - [ ] **Multi-lingual Support**: Hindi, Marathi, Tamil, Telugu, and Kannada regional language options.

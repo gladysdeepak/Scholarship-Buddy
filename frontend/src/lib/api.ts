@@ -74,7 +74,7 @@ export interface OverallEligibilityResponse {
 export interface DocumentGuidanceItem {
   document_name: string;
   required_for_scholarships: string[];
-  issuing_authority: str;
+  issuing_authority: string;
   where_to_obtain: string;
   documents_needed_to_apply: string[];
   estimated_days: string;
@@ -95,6 +95,19 @@ export async function fetchScholarships(params?: {
       Object.entries(params).forEach(([k, v]) => {
         if (v) url.searchParams.append(k, v);
       });
+    }
+    if (params?.query) {
+      const semantic = await fetch(`${API_BASE_URL}/search?q=${encodeURIComponent(params.query)}&k=30`);
+      if (semantic.ok) {
+        const data = await semantic.json();
+        if (data.scholarships?.length) {
+          const result = (data.scholarships as Scholarship[]).filter((s) =>
+            (!params.category || !s.eligibility_rules.allowed_categories || s.eligibility_rules.allowed_categories.some((x: any) => (x.value || x).toLowerCase() === params.category!.toLowerCase())) &&
+            (!params.education_level || !s.eligibility_rules.allowed_education_levels || s.eligibility_rules.allowed_education_levels.some((x: any) => (x.value || x).toLowerCase() === params.education_level!.toLowerCase())) &&
+            (!params.provider_type || s.provider_type.toLowerCase() === params.provider_type.toLowerCase()));
+          if (result.length) return result;
+        }
+      }
     }
     const res = await fetch(url.toString());
     if (!res.ok) throw new Error("Failed to fetch scholarships");
@@ -137,6 +150,40 @@ export async function fetchDocumentGuidance(
     console.warn("Backend API unavailable, generating local document guidance", error);
     return MOCK_DOCUMENT_GUIDANCE;
   }
+}
+
+export async function streamChat(message: string, profile?: StudentProfileData, onStep?: (step: string) => void) {
+  const response = await fetch(`${API_BASE_URL}/chat`, {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message, profile }),
+  });
+  if (!response.ok || !response.body) throw new Error("The assistant could not answer right now.");
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let result: any = null;
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const events = buffer.split("\n\n"); buffer = events.pop() || "";
+    for (const event of events) {
+      const line = event.split("\n").find((item) => item.startsWith("data: "));
+      if (!line || line === "data: [DONE]") continue;
+      const payload = JSON.parse(line.slice(6));
+      if (payload.type === "step") onStep?.(payload.message);
+      if (payload.type === "result") result = payload.result;
+    }
+  }
+  return result;
+}
+
+export async function generateSOP(payload: { student_id: string; scholarship_id: string; answers: string[]; tone: string }) {
+  const response = await fetch(`${API_BASE_URL}/sop/generate`, {
+    method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload),
+  });
+  if (!response.ok) throw new Error("Could not generate the statement. Check the scholarship and try again.");
+  return response.json();
 }
 
 // Local Fallback Data & Evaluator for Seamless UI Operation

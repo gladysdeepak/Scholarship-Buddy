@@ -121,7 +121,7 @@ export default function MatchesPage() {
   // ==========================================
   // STATE 1: GUEST VISITOR (No Profile Created)
   // ==========================================
-  if (!hasProfile) {
+  if (!profile) {
     return (
       <div className="space-y-8 max-w-4xl mx-auto py-6">
         <div className="glass-panel rounded-3xl p-8 sm:p-12 text-center border border-indigo-500/30 space-y-6">

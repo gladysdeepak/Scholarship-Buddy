@@ -6,6 +6,7 @@ frontend/.next/
 backend/.venv/
 __pycache__/
 *.py[cod]
+*.tsbuildinfo
 .pytest_cache/
 
 # Environment / secrets
@@ -15,6 +16,8 @@ __pycache__/
 
 # Local database
 backend/*.db
+backend/chroma_db/
+chroma_db/
 
 # OS / editor files
 .DS_Store

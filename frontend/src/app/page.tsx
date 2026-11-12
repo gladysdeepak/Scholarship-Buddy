@@ -68,7 +68,7 @@ export default function HomePage() {
   // ==========================================
   // STATE 1: GUEST VISITOR (No Profile Created)
   // ==========================================
-  if (!hasProfile) {
+  if (!profile) {
     return (
       <div className="space-y-12">
         {/* Guest Hero Section */}
