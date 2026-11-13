@@ -236,10 +236,3 @@ python3 -m pytest tests/
 
 ---
 
-##  Future Enhancements
-
-- [ ] **Application Progress Tracker**: Step-by-step progress tracking and deadline countdown alerts via WhatsApp / SMS / Email.
-- [ ] **Document OCR & Verification**: Auto-extract income and category details from uploaded certificates.
-- [ ] **Multi-lingual Support**: Hindi, Marathi, Tamil, Telugu, and Kannada regional language options.
-
----
