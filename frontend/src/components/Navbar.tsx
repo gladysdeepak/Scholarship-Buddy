@@ -22,40 +22,40 @@ export default function Navbar() {
 
   const navLinks = [
     { name: "Home", href: "/", icon: Sparkles },
-    { name: "My Profile", href: "/profile", icon: User },
+    { name: "Profile", href: "/profile", icon: User },
     {
-      name: "Matched Schemes",
+      name: "Matches",
       href: "/matches",
       icon: Award,
       badge: hasProfile ? "Active" : undefined,
     },
-    { name: "All Scholarships", href: "/scholarships", icon: Search },
-    { name: "Document Guide", href: "/documents", icon: FileText },
+    { name: "Scholarships", href: "/scholarships", icon: Search },
+    { name: "Documents", href: "/documents", icon: FileText },
     { name: "AI Chat", href: "/chat", icon: MessageCircle },
-    { name: "SOP Builder", href: "/sop", icon: FileText },
+    { name: "SOP", href: "/sop", icon: FileText },
   ];
 
   return (
-    <header className="sticky top-0 z-50 glass-panel border-b border-gray-800">
+    <header className="sticky top-0 z-50 bg-[#fffdf8]/95 backdrop-blur-md border-b border-gray-800 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between gap-3 min-h-16">
           {/* Logo & Vision Branding */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform">
-              <GraduationCap className="w-6 h-6 text-white" />
+          <Link href="/" className="flex shrink-0 items-center gap-2.5 group">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform">
+              <GraduationCap className="w-5 h-5 text-white" />
             </div>
-            <div>
-              <span className="text-xl font-bold font-outfit gradient-text tracking-wide">
+            <div className="flex items-center gap-2">
+              <span className="text-lg lg:text-xl font-bold font-outfit gradient-text tracking-wide whitespace-nowrap">
                 Scholarship Buddy
               </span>
-              <span className="hidden sm:inline-block ml-2 text-xs px-2 py-0.5 rounded-full bg-indigo-950 text-indigo-300 border border-indigo-800/50">
+              <span className="hidden 2xl:inline-block text-xs px-2 py-0.5 rounded-full bg-indigo-950 text-indigo-300 border border-indigo-800/50 whitespace-nowrap">
                 India AI Copilot
               </span>
             </div>
           </Link>
 
           {/* Navigation Links */}
-          <nav className="hidden md:flex items-center gap-1">
+          <nav aria-label="Main navigation" className="hidden md:flex flex-1 items-center justify-center gap-0.5 xl:gap-1">
             {navLinks.map((link) => {
               const Icon = link.icon;
               const isActive = pathname === link.href;
@@ -63,14 +63,16 @@ export default function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-sm font-medium transition-all ${
+                  aria-label={link.name}
+                  title={link.name}
+                  className={`flex shrink-0 items-center justify-center gap-1.5 px-2.5 xl:px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
                     isActive
                       ? "bg-indigo-600/20 text-indigo-300 border border-indigo-500/30"
                       : "text-gray-400 hover:text-gray-200 hover:bg-gray-800/50"
                   }`}
                 >
                   <Icon className={`w-4 h-4 ${isActive ? "text-indigo-400" : ""}`} />
-                  <span>{link.name}</span>
+                  <span className="hidden xl:inline">{link.name}</span>
                   {link.badge && (
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
                   )}
@@ -80,15 +82,15 @@ export default function Navbar() {
           </nav>
 
           {/* Profile Status & Action Button */}
-          <div className="flex items-center gap-3">
+          <div className="flex shrink-0 items-center gap-2">
             {hasProfile && profile ? (
               <div className="flex items-center gap-2">
                 <Link
                   href="/profile"
-                  className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-xl bg-gray-900 border border-indigo-500/30 hover:border-indigo-400 text-xs font-semibold text-gray-200 transition-colors"
+                  className="hidden sm:flex max-w-44 items-center gap-2 px-2.5 py-1.5 rounded-xl bg-gray-900 border border-indigo-500/30 hover:border-indigo-400 text-xs font-semibold text-gray-200 transition-colors"
                 >
                   <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>{profile.name}</span>
+                  <span className="truncate">{profile.name}</span>
                   <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-950 text-indigo-300 border border-indigo-800">
                     {profile.category}
                   </span>
@@ -106,7 +108,7 @@ export default function Navbar() {
             ) : (
               <Link
                 href="/profile"
-                className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white shadow-md shadow-indigo-600/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
+                className="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold whitespace-nowrap bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 text-white shadow-md shadow-indigo-600/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
               >
                 <UserPlus className="w-4 h-4" />
                 <span>Create Profile</span>
